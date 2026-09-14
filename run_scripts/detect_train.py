@@ -45,12 +45,14 @@ EPOCHS = 100 # 训练轮数
 IMAGE_SIZE = 960 # 输入图片尺寸
 BATCH_SIZE = 32 # 所有 GPU 加起来的 Batch Size
 WORKERS = 8 # DataLoader worker 数量
-PATIENCE = 50 # Early Stopping patience
+PATIENCE = 30 # Early Stopping patience
+FREEZE = 10 # 冻结前 10 个模块，主要保留预训练 Backbone 特征，只重点训练后面的 Neck/Head
+WEIGHT_DECAY = 0.0005 # 正则化
 GPU_DEVICES = [0, 1] # 单 GPU：GPU_DEVICES = [0]；CPU：GPU_DEVICES = "cpu"
 SEED = 42 # 随机种子
 DETERMINISTIC = True # 是否启用确定性算法
 OPTIMIZER = "SGD" # 优化器常见选择："SGD"，"Adam"，"AdamW"
-LR0 = 0.01 # 初始学习率，SGD 常见：0.01；Adam / AdamW 常见：0.001
+LR0 = 0.001 # 初始学习率，SGD 常见：0.01；Adam / AdamW 常见：0.001。微调小数据集时可以小一点
 LRF = 0.01 # 最终学习率比例，最终学习率约为：LR0 * LRF
 COS_LR = False # 是否使用 Cosine Learning Rate Scheduler
 WARMUP_EPOCHS = 3.0 # Warmup 轮数
@@ -152,6 +154,8 @@ def _main():
         f"name={NAME}",
         "exist_ok=True", # 日志会预先创建目录，禁止结果目录自动递增
         f"patience={PATIENCE}",
+        f"freeze={FREEZE}",
+        f"weight_decay={WEIGHT_DECAY}",
         f"seed={SEED}",
         f"deterministic={DETERMINISTIC}",
         f"optimizer={OPTIMIZER}",

@@ -47,7 +47,7 @@ else:
 
 MODEL = (
     "/home/goujiaxiang/code_can/ultralytics/ultralytics/runs/detect_train/"
-    "2026-09-14-11-27-26_yolov8m_sus_illegal_const_729/"
+    "2026-09-15-01-24-37_yolov8m_sus_illegal_const_729/"
     "weights/best.pt"
 )  # 待预测模型，可使用 best.pt、last.pt 等
 

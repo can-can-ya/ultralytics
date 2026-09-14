@@ -31,6 +31,11 @@ import tempfile
 
 from ultralytics.cfg import entrypoint
 
+if __package__:
+    from ._run_logging import log_to_file
+else:
+    from _run_logging import log_to_file
+
 
 # ============================================================
 #                       可配置参数
@@ -42,7 +47,7 @@ from ultralytics.cfg import entrypoint
 
 MODEL = (
     "/home/goujiaxiang/code_can/ultralytics/ultralytics/runs/detect_train/"
-    "2026-09-14-09-58-48_yolov8m_sus_illegal_const_729/"
+    "2026-09-14-11-27-26_yolov8m_sus_illegal_const_729/"
     "weights/best.pt"
 )  # 待预测模型，可使用 best.pt、last.pt 等
 
@@ -199,6 +204,7 @@ def build_command(
         f"vid_stride={VID_STRIDE}",
         f"project={PROJECT}",
         f"name={name}",
+        "exist_ok=True",  # 日志会预先创建目录，禁止结果目录自动递增
         f"save={SAVE}",
         f"save_txt={SAVE_TXT}",
         f"save_conf={SAVE_CONF}",
@@ -294,8 +300,13 @@ def run_predict_worker(
     batch_size: int,
     worker_name: str,
 ):
-    """单个 GPU 子进程执行预测。"""
+    """单个 GPU 子进程执行预测，日志与该 GPU 的结果放在一起。"""
+    # worker 自己记录 Python 日志，不使用需要等待 EOF 的底层日志管道。
+    with log_to_file(Path(PROJECT) / worker_name, capture_subprocess=False):
+        _run_predict_worker(model, source, gpu_id, batch_size, worker_name)
 
+
+def _run_predict_worker(model, source, gpu_id, batch_size, worker_name):
     command = build_command(
         model=model,
         source=source,
@@ -318,6 +329,12 @@ def run_predict_worker(
 # ============================================================
 
 def main():
+    # 多 GPU 的每个 worker 独立保存日志，主进程无需捕获子进程文件描述符。
+    with log_to_file(Path(PROJECT) / NAME, capture_subprocess=False):
+        _main()
+
+
+def _main():
 
     print("=" * 80)
     print("🚀 Ultralytics")

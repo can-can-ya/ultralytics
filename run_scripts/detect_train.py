@@ -19,6 +19,11 @@ from pathlib import Path
 
 from ultralytics.cfg import entrypoint
 
+if __package__:
+    from ._run_logging import log_to_file
+else:
+    from _run_logging import log_to_file
+
 
 # ============================================================
 #                       可配置参数
@@ -90,6 +95,12 @@ else:
 # ============================================================
 
 def main():
+    # 与 exist_ok=True 配合，保证日志和训练结果使用同一目录。
+    with log_to_file(Path(PROJECT) / NAME):
+        _main()
+
+
+def _main():
 
     print("=" * 80)
     print("🚀 Ultralytics")
@@ -139,7 +150,7 @@ def main():
         f"workers={WORKERS}",
         f"project={PROJECT}",
         f"name={NAME}",
-        "exist_ok=True",
+        "exist_ok=True", # 日志会预先创建目录，禁止结果目录自动递增
         f"patience={PATIENCE}",
         f"seed={SEED}",
         f"deterministic={DETERMINISTIC}",
